@@ -1,6 +1,6 @@
 import z from 'zod';
 
-export const CompleteTheSentenceQuestionSchema = z.object({
+export const ICompleteTheSentenceQuestionSchema = z.object({
   leftClause: z.string().max(2000).trim(),
   rightClause: z.string().max(2000).trim(),
   availableConjunctions: z.array(z.string().max(16)),
@@ -8,6 +8,6 @@ export const CompleteTheSentenceQuestionSchema = z.object({
   explanation: z.string().max(2000).trim().optional(),
 });
 
-export const CompleteTheSentenceGameSchema = z.object({
-  questions: z.array(CompleteTheSentenceQuestionSchema).min(1),
+export const ICompleteTheSentenceGameSchema = z.object({
+  questions: z.array(ICompleteTheSentenceQuestionSchema).min(1),
 });

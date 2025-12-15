@@ -1,4 +1,4 @@
-export interface CompleteTheSentenceQuestion {
+export interface ICompleteTheSentenceQuestion {
   leftClause: string;
   rightClause: string;
   availableConjunctions: string[];
@@ -6,6 +6,6 @@ export interface CompleteTheSentenceQuestion {
   explanation?: string;
 }
 
-export interface CompleteTheSentenceGame {
-  questions: CompleteTheSentenceQuestion[];
+export interface ICompleteTheSentenceGame {
+  questions: ICompleteTheSentenceQuestion[];
 }
