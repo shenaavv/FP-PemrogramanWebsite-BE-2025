@@ -41,10 +41,41 @@ export const TypeSpeedController = Router()
           request.body,
           request.user!.user_id,
         );
+
         const result = new SuccessResponse(
           StatusCodes.CREATED,
           'Game created',
           newGame,
+        );
+
+        return response.status(result.statusCode).json(result.json());
+      } catch (error) {
+        return next(error);
+      }
+    },
+  )
+  .get(
+    '/generate',
+    (request: Request<{}, {}, {}>, response: Response, next: NextFunction) => {
+      try {
+        const mode = (request.query.mode as string) ?? 'easy';
+        const wordCount = request.query.wordCount
+          ? Number.parseInt(request.query.wordCount as string, 10)
+          : undefined;
+        const time_limit = request.query.time_limit
+          ? Number.parseInt(request.query.time_limit as string, 10)
+          : undefined;
+
+        const generated = TypeSpeedService.generateAutoText(
+          mode as 'easy' | 'medium' | 'hard',
+          wordCount,
+          time_limit,
+        );
+
+        const result = new SuccessResponse(
+          StatusCodes.OK,
+          'Generated text successfully',
+          generated,
         );
 
         return response.status(result.statusCode).json(result.json());
@@ -67,6 +98,7 @@ export const TypeSpeedController = Router()
           request.user!.user_id,
           request.user!.role,
         );
+
         const result = new SuccessResponse(
           StatusCodes.OK,
           'Get game successfully',
@@ -91,6 +123,7 @@ export const TypeSpeedController = Router()
           request.params.game_id,
           true,
         );
+
         const result = new SuccessResponse(
           StatusCodes.OK,
           'Get public game successfully',
@@ -118,6 +151,7 @@ export const TypeSpeedController = Router()
           request.user!.user_id,
           request.user!.role,
         );
+
         const result = new SuccessResponse(
           StatusCodes.OK,
           'Get private game successfully',
@@ -149,6 +183,7 @@ export const TypeSpeedController = Router()
           request.user!.user_id,
           request.user!.role,
         );
+
         const result = new SuccessResponse(
           StatusCodes.OK,
           'Game updated',
@@ -174,6 +209,7 @@ export const TypeSpeedController = Router()
           request.body,
           request.params.game_id,
         );
+
         const successResponse = new SuccessResponse(
           StatusCodes.OK,
           'Answer checked successfully',

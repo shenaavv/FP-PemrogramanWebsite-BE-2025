@@ -7,7 +7,7 @@ import {
 } from '@/common';
 
 const TypeSpeedTextSchema = z.object({
-  content: z.string().min(10).max(500).trim(),
+  content: z.string().min(10).max(8000).trim(),
   difficulty: z.enum(['easy', 'medium', 'hard']),
 });
 

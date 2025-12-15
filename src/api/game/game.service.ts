@@ -106,6 +106,7 @@ export abstract class GameService {
       total_liked: game._count.liked,
       _count: undefined,
     }));
+    console.log(paginationResult);
 
     return {
       data: cleanedResult,

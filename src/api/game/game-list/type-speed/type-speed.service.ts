@@ -49,9 +49,7 @@ export abstract class TypeSpeedService {
         is_published: data.is_publish_immediately,
         game_json: gameJson as unknown as Prisma.InputJsonValue,
       },
-      select: {
-        id: true,
-      },
+      select: { id: true },
     });
 
     return newGame;
@@ -80,14 +78,16 @@ export abstract class TypeSpeedService {
       },
     });
 
-    if (!game || game.game_template.slug !== this.gameSlug)
+    if (!game || game.game_template.slug !== this.gameSlug) {
       throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game not found');
+    }
 
-    if (user_role !== 'SUPER_ADMIN' && game.creator_id !== user_id)
+    if (user_role !== 'SUPER_ADMIN' && game.creator_id !== user_id) {
       throw new ErrorResponse(
         StatusCodes.FORBIDDEN,
         'User cannot access this game',
       );
+    }
 
     return {
       ...game,
@@ -116,14 +116,16 @@ export abstract class TypeSpeedService {
       },
     });
 
-    if (!game || game.game_template.slug !== this.gameSlug)
+    if (!game || game.game_template.slug !== this.gameSlug) {
       throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game not found');
+    }
 
-    if (user_role !== 'SUPER_ADMIN' && game.creator_id !== user_id)
+    if (user_role !== 'SUPER_ADMIN' && game.creator_id !== user_id) {
       throw new ErrorResponse(
         StatusCodes.FORBIDDEN,
         'User cannot access this game',
       );
+    }
 
     if (data.name) {
       const isNameExist = await prisma.games.findUnique({
@@ -131,11 +133,12 @@ export abstract class TypeSpeedService {
         select: { id: true },
       });
 
-      if (isNameExist && isNameExist.id !== game_id)
+      if (isNameExist && isNameExist.id !== game_id) {
         throw new ErrorResponse(
           StatusCodes.BAD_REQUEST,
           'Game name is already used',
         );
+      }
     }
 
     const oldGameJson = game.game_json as ITypeSpeedGameData | null;
@@ -173,9 +176,7 @@ export abstract class TypeSpeedService {
         is_published: data.is_publish,
         game_json: gameJson as unknown as Prisma.InputJsonValue,
       },
-      select: {
-        id: true,
-      },
+      select: { id: true },
     });
 
     return updatedGame;
@@ -191,13 +192,16 @@ export abstract class TypeSpeedService {
       },
     });
 
-    if (!game) throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game not found');
+    if (!game) {
+      throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game not found');
+    }
 
-    if (user_role !== 'SUPER_ADMIN' && game.creator_id !== user_id)
+    if (user_role !== 'SUPER_ADMIN' && game.creator_id !== user_id) {
       throw new ErrorResponse(
         StatusCodes.FORBIDDEN,
         'User cannot delete this game',
       );
+    }
 
     if (game.thumbnail_image) {
       await FileManager.remove(game.thumbnail_image);
@@ -210,21 +214,30 @@ export abstract class TypeSpeedService {
 
   private static async existGameCheck(game_name?: string, game_id?: string) {
     const where: Record<string, unknown> = {};
-    if (game_name) where.name = game_name;
-    if (game_id) where.id = game_id;
 
-    if (Object.keys(where).length === 0) return null;
+    if (game_name) {
+      where.name = game_name;
+    }
+
+    if (game_id) {
+      where.id = game_id;
+    }
+
+    if (Object.keys(where).length === 0) {
+      return null;
+    }
 
     const game = await prisma.games.findFirst({
       where,
-      select: { id: true, creator_id: true },
+      select: { id: true },
     });
 
-    if (game)
+    if (game) {
       throw new ErrorResponse(
         StatusCodes.BAD_REQUEST,
         'Game name is already exist',
       );
+    }
 
     return game;
   }
@@ -235,8 +248,9 @@ export abstract class TypeSpeedService {
       select: { id: true },
     });
 
-    if (!result)
+    if (!result) {
       throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game template not found');
+    }
 
     return result.id;
   }
@@ -267,25 +281,27 @@ export abstract class TypeSpeedService {
       !game ||
       (is_public && !game.is_published) ||
       game.game_template.slug !== this.gameSlug
-    )
+    ) {
       throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game not found');
+    }
 
     if (
       !is_public &&
       user_role !== 'SUPER_ADMIN' &&
       game.creator_id !== user_id
-    )
+    ) {
       throw new ErrorResponse(
         StatusCodes.FORBIDDEN,
         'User cannot get this game data',
       );
+    }
 
-    const gameJson = game.game_json as unknown as ITypeSpeedGameData | null;
+    const gameJson = game.game_json as ITypeSpeedGameData | null;
 
-    if (!gameJson)
+    if (!gameJson) {
       throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game data not found');
+    }
 
-    // Random pilih 1 text untuk dimainkan
     const randomText =
       gameJson.texts[Math.floor(Math.random() * gameJson.texts.length)];
 
@@ -304,6 +320,131 @@ export abstract class TypeSpeedService {
     };
   }
 
+  static generateAutoText(
+    mode: 'easy' | 'medium' | 'hard' = 'easy',
+    wordCount?: number,
+    time_limit?: number,
+  ) {
+    const defaults = { easy: 200, medium: 500, hard: 1000 } as const;
+    const targetWords = wordCount ?? defaults[mode];
+
+    const baseWords = [
+      'the',
+      'be',
+      'to',
+      'of',
+      'and',
+      'a',
+      'in',
+      'that',
+      'have',
+      'I',
+      'it',
+      'for',
+      'not',
+      'on',
+      'with',
+      'he',
+      'as',
+      'you',
+      'do',
+      'at',
+      'this',
+      'but',
+      'his',
+      'by',
+      'from',
+      'they',
+      'we',
+      'say',
+      'her',
+      'she',
+      'or',
+      'an',
+      'will',
+      'my',
+      'one',
+      'all',
+      'would',
+      'there',
+      'their',
+      'what',
+      'so',
+      'up',
+      'out',
+      'if',
+      'about',
+      'who',
+      'get',
+      'which',
+      'go',
+      'me',
+      'when',
+      'make',
+      'can',
+      'like',
+      'time',
+      'no',
+      'just',
+    ];
+
+    const mediumExtras = [
+      'quick',
+      'brown',
+      'fox',
+      'jumps',
+      'lazy',
+      'dog',
+      'lorem',
+      'ipsum',
+      'sample',
+      'random',
+    ];
+
+    const words: string[] = [];
+
+    for (let index = 0; index < targetWords; index++) {
+      let pick = baseWords[Math.floor(Math.random() * baseWords.length)];
+
+      if (mode === 'medium' && Math.random() < 0.08) {
+        pick = mediumExtras[Math.floor(Math.random() * mediumExtras.length)];
+      }
+
+      if (mode === 'hard') {
+        if (Math.random() < 0.12) {
+          pick = mediumExtras[Math.floor(Math.random() * mediumExtras.length)];
+        }
+
+        if (Math.random() < 0.04) {
+          pick = [...pick].reverse().join('');
+        }
+      }
+
+      words.push(pick);
+    }
+
+    if (mode !== 'easy') {
+      for (
+        let index = 10;
+        index < words.length;
+        index += Math.floor(20 + Math.random() * 30)
+      ) {
+        words[index] = `${words[index]}${Math.random() < 0.5 ? ',' : '.'}`;
+      }
+    }
+
+    const content = words.join(' ');
+
+    return {
+      time_limit: time_limit ?? 60,
+      text: {
+        id: `auto-${mode}-${Date.now()}`,
+        content,
+        difficulty: mode,
+      },
+    } as const;
+  }
+
   static async checkAnswer(data: ICheckAnswer, game_id: string) {
     const game = await prisma.games.findUnique({
       where: { id: game_id },
@@ -315,40 +456,44 @@ export abstract class TypeSpeedService {
       },
     });
 
-    if (!game || game.game_template.slug !== this.gameSlug)
+    if (!game || game.game_template.slug !== this.gameSlug) {
       throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Game not found');
+    }
 
     const gameJson = game.game_json as unknown as ITypeSpeedGameData;
     const text = gameJson.texts.find(t => t.id === data.text_id);
 
-    if (!text) throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Text not found');
+    if (!text) {
+      throw new ErrorResponse(StatusCodes.NOT_FOUND, 'Text not found');
+    }
 
-    // Calculate metrics
     const originalText = text.content;
     const userInput = data.user_input;
 
-    const totalChars = originalText.length;
+    const maxLength = Math.max(originalText.length, userInput.length);
     let correctChars = 0;
+    let mismatches = 0;
 
-    for (
-      let index = 0;
-      index < Math.min(originalText.length, userInput.length);
-      index++
-    ) {
-      if (originalText[index] === userInput[index]) {
+    for (let index = 0; index < maxLength; index++) {
+      const o = originalText[index] ?? '';
+      const u = userInput[index] ?? '';
+
+      if (o === u && o !== '') {
         correctChars++;
+      } else {
+        mismatches++;
       }
     }
 
-    const incorrectChars = totalChars - correctChars;
-    const accuracy = Math.round((correctChars / totalChars) * 100);
+    const incorrectChars = mismatches;
+    const accuracy =
+      maxLength === 0 ? 0 : Math.round((correctChars / maxLength) * 100);
 
-    // WPM = (Characters Typed / 5) / (Time in Minutes)
-    const timeInMinutes = data.time_taken / 60;
+    const timeInMinutes = Math.max(data.time_taken, 1) / 60;
     const wpm = Math.round(userInput.length / 5 / timeInMinutes);
 
     const result: ITypeSpeedResult = {
-      total_characters: totalChars,
+      total_characters: maxLength,
       correct_characters: correctChars,
       incorrect_characters: incorrectChars,
       wpm,

@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-import { appRouter } from './api/router';
+import AppRouter from './api/router';
 import { ErrorHandler } from './common';
 
 dotenv.config({ quiet: true });
@@ -33,13 +33,13 @@ app.use('/health', (_, response) =>
   response.status(200).json({
     success: true,
     statusCode: StatusCodes.OK,
-    message: `🌟 Server is healthy. Current time is ${new Date(Date.now()).toLocaleString('ID-id')}`,
+    message: ` Server is healthy. Current time is ${new Date(Date.now()).toLocaleString('ID-id')}`,
   }),
 );
 
 app.use('/uploads', express.static(uploadPath));
 
-app.use('/api', appRouter);
+app.use('/api', AppRouter);
 app.use(ErrorHandler);
 
 const port = process.env.PORT || 4000;
